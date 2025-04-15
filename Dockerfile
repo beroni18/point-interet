@@ -1,5 +1,29 @@
-FROM openjdk:21
-COPY target/*.jar point-interet-0.0.1-SNAPSHOT.jar
+# Étape de build
+FROM maven:3.8.4-openjdk-17 AS build
 
-ENTRYPOINT ["java", "-jar", "/point-interet-0.0.1-SNAPSHOT.jar"]
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier le fichier pom.xml et récupérer les dépendances
+COPY pom.xml .
+#RUN mvn dependency:go-offline
+
+# Copier les sources de l'application
+COPY src ./src
+
+# Compiler et empaqueter l'application (en ignorant les tests)
+RUN mvn clean package -DskipTests
+
+# Étape d'exécution avec une image plus légère
+FROM openjdk:17-jdk-slim
+
+WORKDIR /app
+
+# Copier le JAR généré depuis l'étape de build
+COPY --from=build /app/target/point-interet-0.0.1-SNAPSHOT.jar .
+
+# Exposer le port utilisé par l'application
 EXPOSE 8082
+
+# Lancer l'application
+ENTRYPOINT ["java", "-jar", "/app/point-interet-0.0.1-SNAPSHOT.jar"]
