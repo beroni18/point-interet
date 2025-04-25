@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
+@CrossOrigin("*")
 @RequestMapping("/api/pt-interet")
 public class PointInteretApi {
     @Autowired
